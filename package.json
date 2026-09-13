@@ -1,7 +1,7 @@
 {
-  "name": "hermes-desktop",
+  "name": "mighty-desktop",
   "version": "0.7.7",
-  "description": "Hermes Agent Desktop — self-improving AI assistant",
+  "description": "Mighty — your local AI workspace, powered by Hermes Agent",
   "main": "./out/main/index.js",
   "author": "fathah",
   "homepage": "https://github.com/fathah/hermes-desktop",

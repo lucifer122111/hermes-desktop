@@ -8,9 +8,9 @@ Layout passes the selected connection ID and profile into both session surfaces.
 
 ## Collapse toggle brand mark
 
-The sidebar header's collapse control doubles as the brand mark: collapsed it shows a circular dot that swaps to the expand icon on hover; expanded it is just the collapse icon, parked top-right for a clean, logo-free header.
+The sidebar header exposes Mighty as the local workspace brand while retaining the existing collapse control and navigation behavior.
 
-[[src/renderer/src/screens/Layout/Layout.tsx#Layout]] renders `.sidebar-collapse-toggle`. Collapsed, it holds a fixed-size `.sidebar-collapse-swap` box stacking a `.sidebar-collapse-mark` circle (filled with `--text-primary`, so white on dark themes and dark on light) over the `PanelLeftOpen` icon; only opacity toggles on hover/focus, so the button never reflows. Expanded, the `.sidebar-brand` row holds only the `PanelLeftClose` collapse toggle (`justify-content: flex-end`); the wordmark was removed so the top reads clean below the traffic lights.
+[[src/renderer/src/screens/Layout/Layout.tsx#Layout]] renders an original `.mighty-brand` with a Wand mark, the Mighty name, and a local-workspace label. It does not reuse third-party UI source. The existing `.sidebar-collapse-toggle` remains at the other edge: collapsed it holds a fixed-size `.sidebar-collapse-swap` box stacking a circular mark over the `PanelLeftOpen` icon, while the wordmark hides so the rail stays compact.
 
 ## Infinite sidebar list
 

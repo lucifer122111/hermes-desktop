@@ -1,6 +1,8 @@
 # Window title bar and conversation tabs
 
-The top strip of the main window is a browser-style title bar: it is the window's drag region, and the open-conversation tabs live *on* it rather than in a separate bar below, so no vertical space is spent on a dedicated, always-empty drag strip.
+The top strip of the main window is a browser-style title bar: it is the window's drag region, and the open-conversation tabs live _on_ it rather than in a separate bar below, so no vertical space is spent on a dedicated, always-empty drag strip.
+
+Mighty is packaged separately from Hermes One (`com.lucifer122111.mighty` and `mighty.exe`) so it can be installed alongside the original desktop client while using the existing local Hermes engine during migration.
 
 On macOS the window is frameless (`titleBarStyle: "hiddenInset"`, traffic lights inset at x/y 16 — see [[src/main/app/start.ts#startMainProcess]]), and [[src/renderer/src/App.tsx]] renders a fixed full-width `.drag-region` (`-webkit-app-region: drag`, z-index 1000) so the whole top band — including over the sidebar/traffic-light area — drags the window. This strip is mac-only; other platforms keep the OS title bar.
 
@@ -10,7 +12,7 @@ On macOS the window is frameless (`titleBarStyle: "hiddenInset"`, traffic lights
 
 The sidebar is frosted glass on macOS — the window material shows through it — while the content pane stays opaque and readable.
 
-[[src/main/app/start.ts#createWindow]] gives the window `vibrancy: "under-window"` + `visualEffectState: "active"` + a transparent `backgroundColor` on macOS. The material's light/dark **tone follows the app theme**, not the system appearance: [[src/renderer/src/components/ThemeProvider.tsx#ThemeProvider]] pushes the resolved theme's `appearance` to the main process via the `set-native-appearance` IPC ([[src/main/ipc/register.ts#registerIpcHandlers]] → `nativeTheme.themeSource`), passing `"system"` through only for the "System" theme so its `prefers-color-scheme` still tracks the OS. This is the fix for the earlier milky-sidebar bug: `under-window` alone follows the *system* appearance, so a dark theme on a light-mode Mac frosted light; syncing `themeSource` keeps a dark theme's frost dark. `createWindow` seeds `themeSource = "dark"` (the default theme) so the first paint isn't milky before the renderer refines it.
+[[src/main/app/start.ts#createWindow]] gives the window `vibrancy: "under-window"` + `visualEffectState: "active"` + a transparent `backgroundColor` on macOS. The material's light/dark **tone follows the app theme**, not the system appearance: [[src/renderer/src/components/ThemeProvider.tsx#ThemeProvider]] pushes the resolved theme's `appearance` to the main process via the `set-native-appearance` IPC ([[src/main/ipc/register.ts#registerIpcHandlers]] → `nativeTheme.themeSource`), passing `"system"` through only for the "System" theme so its `prefers-color-scheme` still tracks the OS. This is the fix for the earlier milky-sidebar bug: `under-window` alone follows the _system_ appearance, so a dark theme on a light-mode Mac frosted light; syncing `themeSource` keeps a dark theme's frost dark. `createWindow` seeds `themeSource = "dark"` (the default theme) so the first paint isn't milky before the renderer refines it.
 
 For the material to paint, the renderer leaves surfaces transparent: [[src/renderer/src/App.tsx]] adds `shell-vibrant` to `.app` only on macOS and only on the `main` screen (onboarding stays solid). Under it, `body`/`#root`/`.app` go transparent, the `.sidebar` and `.status-bar` become a translucent `--bg-secondary` tint, and `.content` keeps an opaque `--bg-primary`. Because a transparent window is no longer masked to its rounded shape by macOS, `.content` also rounds its own top-right corner (`0 16px 0 0`) — the sidebar owns top-left, the status bar owns the bottom two — so the opaque panes don't show square corners.
 
@@ -18,7 +20,7 @@ For the material to paint, the renderer leaves surfaces transparent: [[src/rende
 
 Modals and pickers use a `--bg-secondary` tint plus `backdrop-filter: blur(30px) saturate(1.5)`, but the tint is **97% opaque** so legibility never depends on the blur actually painting.
 
-The blur is treated as pure enhancement, not a load-bearing layer. On the transparent vibrancy window above, `backdrop-filter` is unreliable in packaged macOS builds — it silently drops to a no-op even with hardware acceleration on — which left the earlier 85%-opaque panels showing sharp app content bleeding through (the "transparent modal" bug). Raising the tint to 97% in `main.css` makes every shared frosted surface — the settings/profile/models/schedules/gateway/profile-switch modals and the model/reasoning/fast-mode dropdowns — render near-identically for all users regardless of GPU or build type; where the blur *does* paint it adds a faint frost, but its absence is barely perceptible. Keep new glass surfaces at this opacity, not the old 85%, for the same reason.
+The blur is treated as pure enhancement, not a load-bearing layer. On the transparent vibrancy window above, `backdrop-filter` is unreliable in packaged macOS builds — it silently drops to a no-op even with hardware acceleration on — which left the earlier 85%-opaque panels showing sharp app content bleeding through (the "transparent modal" bug). Raising the tint to 97% in `main.css` makes every shared frosted surface — the settings/profile/models/schedules/gateway/profile-switch modals and the model/reasoning/fast-mode dropdowns — render near-identically for all users regardless of GPU or build type; where the blur _does_ paint it adds a faint frost, but its absence is barely perceptible. Keep new glass surfaces at this opacity, not the old 85%, for the same reason.
 
 ### Fast-mode icon alignment
 
@@ -31,6 +33,12 @@ In `src/renderer/src/assets/main.css`, `.chat-fast-popover-icon` owns flex cente
 A native system strip pinned full-width beneath the sidebar+content row surfaces live state that was otherwise hidden: gateway/connection, active model, and skill count, plus real keyboard hints.
 
 [[src/renderer/src/screens/Layout/StatusBar.tsx#StatusBar]] self-fetches from `listProfiles` (active profile's `model`, `skillCount`, `gatewayRunning`) and `getConnectionConfig` (`mode`), polling every 4s. Every field is real — an unknown value drops its chip rather than showing a placeholder, and the hints advertise only shortcuts that exist (`/` commands, `⌘,`/`Ctrl,` settings), never a fabricated `⌘K`. [[src/renderer/src/screens/Layout/Layout.tsx]] wraps its `.layout` row in a `.layout-shell` column and renders the strip as the row's sibling; the online/offline dot uses the theme-aware `--success` token.
+
+## Mighty workspace context
+
+Mighty adds a small context strip below the session tabs so the active profile is visible without replacing the tab bar or inventing connection state.
+
+[[src/renderer/src/screens/Layout/Layout.tsx#Layout]] renders `.mighty-workspace-context` after [[src/renderer/src/screens/Layout/ActiveSessionsBar.tsx#ActiveSessionsBar]]. It states the selected profile from the same `activeProfile` that drives the chat transport. The strip is visual context only: it does not add a new session, alter profile routing, or claim that a remote connection is local.
 
 ## Tabs layered above the drag region
 

@@ -2234,6 +2234,56 @@ body:has(.shell-vibrant),
   color: var(--text-secondary);
 }
 
+/* The Mighty context strip makes the selected workspace obvious while the
+   browser-style session tabs above it remain responsible for switching chats.
+   It uses only the existing theme tokens, so every built-in theme retains its
+   own contrast and accessibility settings. */
+.mighty-workspace-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 34px;
+  padding: 0 18px;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--bg-primary) 94%, var(--accent));
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, var(--accent));
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.mighty-workspace-title,
+.mighty-profile-context {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.mighty-workspace-title {
+  color: var(--text-primary);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.mighty-workspace-title svg {
+  color: var(--accent-text);
+}
+
+.mighty-profile-context {
+  overflow: hidden;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.mighty-profile-context strong {
+  overflow: hidden;
+  max-width: 220px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-overflow: ellipsis;
+}
+
 .sidebar {
   width: 250px;
   background: var(--bg-secondary);
@@ -2257,15 +2307,64 @@ body:has(.shell-vibrant),
   width: 64px;
 }
 
+.mighty-shell .sidebar {
+  background: color-mix(in srgb, var(--bg-secondary) 94%, var(--accent));
+  border-right: 1px solid color-mix(in srgb, var(--border) 75%, var(--accent));
+}
+
 .sidebar-brand {
   display: flex;
   align-items: center;
-  /* Logo removed for a clean top — just the collapse toggle, parked top-right
-     opposite the traffic lights. */
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 10px;
-  padding: 4px 12px 2px;
+  min-height: 58px;
+  padding: 12px 12px 8px;
   margin-top: 12px;
+}
+
+.mighty-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.mighty-brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  color: var(--user-bubble-text);
+  background: var(--accent);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 38%, transparent);
+}
+
+.mighty-brand-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1.1;
+}
+
+.mighty-brand-copy strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 720;
+  letter-spacing: -0.025em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mighty-brand-copy small {
+  color: var(--text-muted);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
 }
 
 .sidebar-logo {
@@ -2344,8 +2443,13 @@ body:has(.shell-vibrant),
 
 .sidebar-collapsed .sidebar-brand {
   justify-content: center;
+  min-height: 64px;
   padding: 18px 10px;
-  margin-top: 18px;
+  margin-top: 10px;
+}
+
+.sidebar-collapsed .mighty-brand {
+  display: none;
 }
 
 .sidebar-collapsed .sidebar-logo {
@@ -2438,6 +2542,7 @@ body:has(.shell-vibrant),
 .sidebar-nav-item.active {
   background: var(--accent-subtle);
   color: var(--accent-text);
+  box-shadow: inset 2px 0 0 var(--accent);
 }
 
 .sidebar-nav-item svg {

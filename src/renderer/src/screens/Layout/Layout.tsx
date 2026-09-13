@@ -48,6 +48,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
+  Wand,
 } from "../../assets/icons";
 import type { LucideIcon } from "lucide-react";
 import { useI18n } from "../../components/useI18n";
@@ -684,10 +685,19 @@ function Layout({
     : t("navigation.collapseSidebar");
 
   return (
-    <div className="layout-shell">
+    <div className="layout-shell mighty-shell">
       <div className={`layout ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <aside className="sidebar">
           <div className="sidebar-brand">
+            <div className="mighty-brand" aria-label="Mighty workspace">
+              <span className="mighty-brand-mark" aria-hidden="true">
+                <Wand size={16} />
+              </span>
+              <span className="mighty-brand-copy">
+                <strong>Mighty</strong>
+                <small>LOCAL WORKSPACE</small>
+              </span>
+            </div>
             <button
               className="sidebar-collapse-toggle"
               type="button"
@@ -861,6 +871,18 @@ function Layout({
             onNew={handleNewChat}
             getAppearance={getAppearance}
           />
+          <div
+            className="mighty-workspace-context"
+            aria-label="Workspace context"
+          >
+            <span className="mighty-workspace-title">
+              <Wand size={14} aria-hidden="true" />
+              Mighty workspace
+            </span>
+            <span className="mighty-profile-context">
+              Active profile <strong>{activeProfile}</strong>
+            </span>
+          </div>
           {verifyWarning && onReinstall && onDismissVerifyWarning && (
             <VerifyWarningBanner
               onReinstall={onReinstall}
