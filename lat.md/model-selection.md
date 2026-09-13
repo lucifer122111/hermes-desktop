@@ -4,6 +4,18 @@ The in-chat (bottom) model picker selects a model for the **current conversation
 
 The override is held in renderer state on each `<Chat>` run ([[src/renderer/src/screens/Chat/Chat.tsx]]), persisted by session id, and sent with every message; it is cleared when the conversation is cleared/reset and is absent on a fresh chat, so new conversations start on the global default. This is distinct from the persisted [[model-context]] default that non-chat surfaces read.
 
+## Session stability during a switch
+
+Changing a model must first use `/model` on the existing runtime session. A
+stored session for a custom/OpenAI-compatible provider is not itself an error
+and must never be closed merely because its currently active model differs from
+the selected one. The dashboard transport validates the live result after the
+switch and retains that session for later turns. It creates a replacement only
+after an explicit worker-exit recovery or a failed turn. This prevents a
+second-prompt race where a session was silently replaced and the gateway later
+reported a 404. The regression is covered by
+[[src/renderer/src/screens/Chat/hooks/useDashboardChatTransport.test.tsx]].
+
 ## Two-pane picker grouped by display brand
 
 The bottom [[src/renderer/src/screens/Chat/ModelPicker.tsx]] dropdown is a two-pane layout: a left **provider rail** filters a right **flat model list**, with a top search box (leading magnifier icon) narrowing both.

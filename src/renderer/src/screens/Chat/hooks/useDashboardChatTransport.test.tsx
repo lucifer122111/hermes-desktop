@@ -74,6 +74,8 @@ function Harness({
   connectionRevision,
   fallbackOnUnavailable = false,
   initialConnectionMode = "local",
+  initialModel = "bad-model",
+  initialProvider = "bad-provider",
   onDashboardUnavailable,
   setUsage = vi.fn() as SetUsageMock,
 }: {
@@ -82,6 +84,8 @@ function Harness({
   connectionRevision?: number;
   fallbackOnUnavailable?: boolean;
   initialConnectionMode?: "local" | "remote" | "ssh";
+  initialModel?: string;
+  initialProvider?: string;
   onDashboardUnavailable?: (reason: string) => void;
   setUsage?: SetUsageMock;
 }): null {
@@ -93,8 +97,8 @@ function Harness({
       turnId: "turn-bad",
     },
   ]);
-  const [model, setModel] = useState("bad-model");
-  const [provider, setProvider] = useState("bad-provider");
+  const [model, setModel] = useState(initialModel);
+  const [provider, setProvider] = useState(initialProvider);
   const [connectionMode, setConnectionMode] = useState<
     "local" | "remote" | "ssh"
   >(initialConnectionMode);
@@ -220,6 +224,52 @@ describe("useDashboardChatTransport recovery", () => {
     expect(methods.filter((method) => method === "slash.exec")).toHaveLength(1);
     expect(methods.filter((method) => method === "model.options")).toHaveLength(
       3,
+    );
+  });
+
+  it("keeps a saved custom session while it applies its selected model", async () => {
+    const requests: Array<{ method: string; params: unknown }> = [];
+    let liveModel = "previous-model";
+    dashboardMock.request.mockImplementation(async (method, params) => {
+      requests.push({ method, params });
+      if (method === "session.create") {
+        return {
+          session_id: "live-custom",
+          stored_session_id: "stored-custom",
+        };
+      }
+      if (method === "model.options") {
+        return { model: liveModel, provider: "custom", providers: [] };
+      }
+      if (method === "slash.exec") {
+        liveModel = "selected-model";
+        return {};
+      }
+      return {};
+    });
+
+    const api: HarnessApi = {};
+    render(
+      <Harness
+        api={api}
+        initialModel="selected-model"
+        initialProvider="custom"
+      />,
+    );
+
+    await act(async () => {
+      await api.send?.("keep this conversation");
+    });
+
+    expect(requests).toContainEqual({
+      method: "slash.exec",
+      params: {
+        session_id: "live-custom",
+        command: "/model selected-model --provider custom",
+      },
+    });
+    expect(requests.map((request) => request.method)).not.toContain(
+      "session.close",
     );
   });
 

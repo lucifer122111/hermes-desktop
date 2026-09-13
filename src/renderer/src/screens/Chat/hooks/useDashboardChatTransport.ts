@@ -1373,46 +1373,13 @@ export function useDashboardChatTransport({
           before,
         );
 
-        if (
-          storedSessionIdRef.current &&
-          !dashboardModelMatches(dashboardProvider, model, before) &&
-          (provider === "custom" ||
-            (before.provider || "").toLowerCase().startsWith("custom"))
-        ) {
-          targetSessionId = await resetRuntimeSession(targetSessionId);
-          before = await client.request<ModelOptionsResponse>("model.options", {
-            session_id: targetSessionId,
-          });
-          dashboardProvider = resolveDashboardProviderForModel(
-            provider,
-            model,
-            modelBaseUrl,
-            before,
-          );
-          if (dashboardModelMatches(dashboardProvider, model, before)) {
-            appliedModelRef.current = `${targetSessionId}\n${dashboardProvider}\n${model}`;
-            return targetSessionId;
-          }
-        }
-
-        if (
-          provider === "custom" &&
-          dashboardProvider === "custom" &&
-          storedSessionIdRef.current
-        ) {
-          targetSessionId = await resetRuntimeSession(targetSessionId);
-
-          const rebuilt = await client.request<ModelOptionsResponse>(
-            "model.options",
-            {
-              session_id: targetSessionId,
-            },
-          );
-          if (dashboardModelMatches("custom", model, rebuilt)) {
-            appliedModelRef.current = `${targetSessionId}\ncustom\n${model}`;
-            return targetSessionId;
-          }
-        }
+        // A saved custom/OpenAI-compatible session is still a valid session.
+        // Previously we closed it before trying `/model`, sometimes twice. That
+        // caused the second prompt to race a newly created gateway session and
+        // was especially visible with local/NVIDIA-compatible providers as a
+        // misleading 404. Switch the model on the existing session first. A
+        // runtime session is rebuilt only for the explicit worker-exit recovery
+        // below, or after a real failed turn requests recovery.
 
         const resolvedCommand = dashboardModelCommand(dashboardProvider, model);
         if (!resolvedCommand) return targetSessionId;
