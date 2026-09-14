@@ -1,8 +1,8 @@
 # Mighty Desktop workspace
 
 This is the single user-facing Mighty application. It replaces the older
-separate Mighty Tkinter window and localhost web page, which remain only as
-diagnostic/migration utilities in the parent `Mighty` folder.
+separate Mighty Tkinter window and localhost web page. Those old interfaces
+have been removed; CLI diagnostics remain in the parent `Mighty` folder.
 
 ## Use and edit
 
@@ -15,10 +15,10 @@ diagnostic/migration utilities in the parent `Mighty` folder.
 
 ## Single-app rule
 
-Mighty Desktop owns the user-visible session and tool timeline. Do not launch
-the parent folder's `mighty_desktop.py` or `mighty.py serve` as a second daily
-workspace: two simultaneous front ends can split session context and make task
-status misleading. The parent tools are limited to diagnostics and migration.
+Mighty Desktop owns the user-visible session and tool timeline. All desktop
+launchers, including the Start menu and Windows startup shortcuts, target the
+same build. The parent CLI's `open` command also launches this desktop; the old
+`serve` command and separate Tkinter/web interface files have been removed.
 
 ## Safety and feature boundaries
 

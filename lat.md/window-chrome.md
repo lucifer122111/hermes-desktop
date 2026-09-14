@@ -2,7 +2,7 @@
 
 The top strip of the main window is a browser-style title bar: it is the window's drag region, and the open-conversation tabs live _on_ it rather than in a separate bar below, so no vertical space is spent on a dedicated, always-empty drag strip.
 
-Mighty is packaged separately from Hermes One (`com.lucifer122111.mighty` and `mighty.exe`) so it can be installed alongside the original desktop client while using the existing local Hermes engine during migration. This is the single Mighty UI; the parent compatibility tools intentionally do not launch a second desktop window.
+Mighty is packaged separately from Hermes One (`com.lucifer122111.mighty` and `mighty.exe`) so it can be installed alongside the original desktop client while using the existing local Hermes engine during migration. This is the single Mighty UI. The old Tkinter/web interfaces were removed, and the Start menu, Windows startup, and parent CLI `open` command all target this desktop build.
 
 On macOS the window is frameless (`titleBarStyle: "hiddenInset"`, traffic lights inset at x/y 16 — see [[src/main/app/start.ts#startMainProcess]]), and [[src/renderer/src/App.tsx]] renders a fixed full-width `.drag-region` (`-webkit-app-region: drag`, z-index 1000) so the whole top band — including over the sidebar/traffic-light area — drags the window. This strip is mac-only; other platforms keep the OS title bar.
 
