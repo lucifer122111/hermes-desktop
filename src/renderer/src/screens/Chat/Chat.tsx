@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { Zap, Globe } from "lucide-react";
+import { Zap, Globe, MousePointer2 } from "lucide-react";
 import { ChatInput, type ChatInputHandle } from "./ChatInput";
 import { ChatEmptyState } from "./ChatEmptyState";
 import { MessageList } from "./MessageList";
@@ -51,6 +51,9 @@ interface QueuedMessage {
   text: string;
   attachments: Attachment[];
 }
+
+const SCREEN_HELP_PROMPT =
+  "I explicitly pressed Mighty’s Help with this screen button. Help me with the current app and the area near my pointer. First use Windows-MCP to make a fresh observation of the visible window; do not assume the pointer identifies a specific object until the observation confirms it. Explain what you observe and the next action. Ask for approval before any consequential click, typing, download, deletion, login, or external posting. Prefer the app’s native API or MCP route over mouse automation.";
 
 export type { ChatMessage } from "./types";
 
@@ -846,6 +849,13 @@ function Chat({
     [isLoading],
   );
 
+  const handleScreenHelp = useCallback(() => {
+    // This is always an explicit user request. It uses the same visible chat
+    // timeline and approval flow as an ordinary task, rather than creating a
+    // hidden observer or a parallel control channel.
+    handleSubmitOrQueue(SCREEN_HELP_PROMPT, []);
+  }, [handleSubmitOrQueue]);
+
   const handleSuggestion = useCallback((text: string) => {
     chatInputRef.current?.setText(text);
   }, []);
@@ -1101,6 +1111,25 @@ function Chat({
                 }}
               >
                 <Globe size={14} />
+              </button>
+              <button
+                type="button"
+                className="btn-ghost chat-tool-btn"
+                onClick={handleScreenHelp}
+                title="Help with this screen"
+                aria-label="Help with this screen"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 28,
+                  height: 28,
+                  padding: 0,
+                  borderRadius: 6,
+                  color: "var(--text-secondary)",
+                }}
+              >
+                <MousePointer2 size={14} />
               </button>
             </>
           }
