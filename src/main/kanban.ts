@@ -105,6 +105,32 @@ interface RunOpts {
   timeoutMs?: number;
 }
 
+export async function createOfficeStage(
+  title: string,
+  body: string,
+  parent: string | undefined,
+  profile?: string,
+): Promise<KanbanResult<{ id: string }>> {
+  if (isRemoteOnlyMode()) return unsupportedInRemote();
+  const args = [
+    "create",
+    title,
+    "--body",
+    body,
+    "--assignee",
+    profile || "default",
+    "--max-retries",
+    "2",
+    "--json",
+  ];
+  if (parent) args.push("--parent", parent);
+  const result = await runKanban(args, { profile, parseJson: true });
+  const id = (result.data as { id?: string } | undefined)?.id;
+  return result.success && id
+    ? { success: true, data: { id } }
+    : { success: false, error: result.error || "Task ID missing" };
+}
+
 async function runKanban(
   args: string[],
   opts: RunOpts = {},

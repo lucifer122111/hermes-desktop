@@ -1,5 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import {
+  APPEARANCE_KEY,
+  DEFAULT_APPEARANCE,
+  appearanceVariables,
+  readAppearance,
+  validateAppearance,
+  type AppearanceOptions,
+} from "../mighty/appearance";
+import {
   DEFAULT_DARK_THEME,
   DEFAULT_LIGHT_THEME,
   THEMES,
@@ -20,6 +28,8 @@ interface ThemeContextValue {
   /** Whether corners are rounded (radius tokens) or squared off (0). */
   rounded: boolean;
   setRounded: (rounded: boolean) => void;
+  appearance: AppearanceOptions;
+  setAppearance: (appearance: AppearanceOptions) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
@@ -28,6 +38,8 @@ const ThemeContext = createContext<ThemeContextValue>({
   setTheme: () => {},
   rounded: true,
   setRounded: () => {},
+  appearance: DEFAULT_APPEARANCE,
+  setAppearance: () => {},
 });
 
 const THEME_IDS = new Set(THEMES.map((t) => t.id));
@@ -50,10 +62,32 @@ export function ThemeProvider({
 }): React.JSX.Element {
   const [theme, setThemeState] = useState<Theme>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
+    if (!localStorage.getItem("mighty.human-skin.v1")) {
+      localStorage.setItem("mighty.human-skin.v1", "1");
+      if (!stored || stored === "dark" || stored === "system") {
+        localStorage.setItem(STORAGE_KEY, "human-dark");
+        return "human-dark";
+      }
+    }
     if (stored === "system" || (stored && THEME_IDS.has(stored))) return stored;
     return DEFAULT_DARK_THEME;
   });
   const [resolved, setResolved] = useState<string>(() => resolve(theme));
+  const [appearance, setAppearanceState] = useState(readAppearance);
+  function setAppearance(next: AppearanceOptions): void {
+    const validated = validateAppearance(next);
+    localStorage.setItem(APPEARANCE_KEY, JSON.stringify(validated));
+    setAppearanceState(validated);
+  }
+  useEffect(() => {
+    const vars = appearanceVariables(resolved, appearance);
+    for (const [key, value] of Object.entries(vars))
+      document.documentElement.style.setProperty(key, value);
+    return () => {
+      for (const key of Object.keys(vars))
+        document.documentElement.style.removeProperty(key);
+    };
+  }, [resolved, appearance]);
   const [rounded, setRoundedState] = useState<boolean>(
     () => localStorage.getItem(RADIUS_STORAGE_KEY) !== "false",
   );
@@ -112,7 +146,15 @@ export function ThemeProvider({
 
   return (
     <ThemeContext.Provider
-      value={{ theme, resolved, setTheme, rounded, setRounded }}
+      value={{
+        theme,
+        resolved,
+        setTheme,
+        rounded,
+        setRounded,
+        appearance,
+        setAppearance,
+      }}
     >
       {children}
     </ThemeContext.Provider>

@@ -1,7 +1,7 @@
 import { app, BrowserWindow, nativeTheme, session, shell } from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
-import icon from "../../../resources/icon.png?asset";
+import icon from "../../../resources/mighty-icon.png?asset";
 import { getPublicConnectionConfig } from "../config";
 import { stopHealthPolling } from "../hermes";
 import { stopAllDashboards } from "../dashboard";
@@ -21,7 +21,7 @@ import { showChatContextMenu } from "./context-menu";
 import { buildMenu } from "./menu";
 import { setupUpdater } from "./updater";
 
-const APP_NAME = process.env.HERMES_DESKTOP_APP_NAME?.trim() || "Hermes One";
+const APP_NAME = process.env.HERMES_DESKTOP_APP_NAME?.trim() || "Mighty";
 const OPEN_DEVTOOLS_ON_START =
   process.env.HERMES_OPEN_DEVTOOLS === "1" ||
   process.env.HERMES_DESKTOP_OPEN_DEVTOOLS === "1";
@@ -50,7 +50,7 @@ export function startMainProcess(): void {
   setupUpdater({ getMainWindow: () => mainWindow });
 
   app.whenReady().then(() => {
-    electronApp.setAppUserModelId("com.hermes.desktop");
+    electronApp.setAppUserModelId("com.lucifer122111.mighty");
 
     app.on("browser-window-created", (_, window) => {
       optimizer.watchWindowShortcuts(window);
@@ -182,7 +182,7 @@ function createWindow(): void {
           backgroundColor: "#00000000",
         }
       : {}),
-    ...(process.platform === "linux" ? { icon } : {}),
+    ...(process.platform !== "darwin" ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
       nodeIntegration: false,

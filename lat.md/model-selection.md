@@ -6,7 +6,9 @@ The override is held in renderer state on each `<Chat>` run ([[src/renderer/src/
 
 ## Session stability during a switch
 
-Changing a model must first use `/model` on the existing runtime session. A
+Changing a model must first use `/model` on the existing runtime session.
+
+A
 stored session for a custom/OpenAI-compatible provider is not itself an error
 and must never be closed merely because its currently active model differs from
 the selected one. The dashboard transport validates the live result after the

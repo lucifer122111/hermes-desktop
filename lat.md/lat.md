@@ -2,6 +2,8 @@ This directory defines the high-level concepts, business logic, and architecture
 
 > **Hermes One** is a community-maintained project. This desktop app is a wrapper around **Hermes Agent** — it is **not affiliated with, endorsed by, or supported by Nous Research**. "Hermes One" is the name of this community project; "Hermes"/"Hermes Agent" refer to the upstream agent it builds on.
 
+- [[mighty-workspace]] — additive Mighty UI, native office workflows, independent runtime and verified learning.
+- [[mighty-artwork]] — the user-supplied application icon and welcome artwork.
 - [[chat-commands]] — how typed slash commands are routed through the gateway's `slash.exec`/`command.dispatch` pipeline instead of being sent as prompt text.
 - [[chat-input]] — the unified chat composer surface and its theme-aware animated border treatment.
 - [[chat-performance]] — how chat rendering stays responsive through contained transcript rows, batched textarea resizing, and fixed-row slash-command virtualization.

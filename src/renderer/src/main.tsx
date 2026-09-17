@@ -1,4 +1,6 @@
 import "./assets/main.css";
+import "./mighty/mighty.css";
+import "./mighty/agency-office.css";
 
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";

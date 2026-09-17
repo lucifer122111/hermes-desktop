@@ -27,7 +27,7 @@ import Skills from "../Skills/Skills";
 import Memory from "../Memory/Memory";
 import Tools from "../Tools/Tools";
 import Gateway from "../Gateway/Gateway";
-import Office from "../Office/Office";
+import AgencyOffice from "../../mighty/AgencyOffice";
 import Providers from "../Providers/Providers";
 import Schedules from "../Schedules/Schedules";
 import Kanban from "../Kanban/Kanban";
@@ -50,10 +50,23 @@ import {
   Plus,
   Wand,
 } from "../../assets/icons";
-import type { LucideIcon } from "lucide-react";
+import {
+  House,
+  MessageCircle,
+  Palette,
+  Search,
+  Smile,
+  type LucideIcon,
+} from "lucide-react";
+import Workspace from "../../mighty/Workspace";
+import ThemeStudio from "../../mighty/ThemeStudio";
+import Companion from "../../mighty/Companion";
+import mightyIcon from "../../assets/mighty-icon.png";
 import { useI18n } from "../../components/useI18n";
 
 type View =
+  | "workspace"
+  | "appearance"
   | "chat"
   | "discover"
   | "agents"
@@ -66,12 +79,21 @@ type View =
   | "kanban"
   | "gateway";
 
-const PINNED_NAV_ITEMS: { view: View; icon: LucideIcon; labelKey: string }[] = [
+const PINNED_NAV_ITEMS: {
+  view: View;
+  icon: LucideIcon;
+  labelKey?: string;
+  label?: string;
+}[] = [
+  { view: "workspace", icon: House, label: "Overview" },
+  { view: "chat", icon: MessageCircle, label: "Chat" },
+  { view: "memory", icon: Brain, label: "Brain" },
+  { view: "kanban", icon: KanbanIcon, label: "Workflows" },
+  { view: "tools", icon: Workflow, label: "Apps & tools" },
   { view: "discover", icon: Compass, labelKey: "navigation.discover" },
   // "agents" (Profiles) is reached from the sidebar-footer ProfileSwitcher's
   // "Manage profiles" action rather than a top-level nav item.
   { view: "office", icon: Building, labelKey: "navigation.office" },
-  { view: "kanban", icon: KanbanIcon, labelKey: "navigation.kanban" },
   // "skills" lives under the Discover tab (installed + community), so it's no
   // longer a top-level nav item.
   { view: "schedules", icon: Timer, labelKey: "navigation.schedules" },
@@ -102,7 +124,8 @@ function Layout({
 }: LayoutProps): React.JSX.Element {
   const { t } = useI18n();
   const { openSettings } = useSettingsModal();
-  const [view, setView] = useState<View>("chat");
+  const [view, setView] = useState<View>("workspace");
+  const [companionMode, setCompanionMode] = useState(false);
   // Multiple conversations coexist (background sessions + multi-agent). Each is
   // a ChatRun; all are mounted, only the active one is shown. Profile switches
   // preserve existing conversations and activate a scratch run for the selected
@@ -267,7 +290,7 @@ function Layout({
   // Tabs lazy-mount on first visit, then stay mounted (display:none toggle).
   // Keeps IPC refetch / DOM rebuild off the tab-switch hot path.
   const [visitedViews, setVisitedViews] = useState<Set<View>>(
-    () => new Set<View>(["chat"]),
+    () => new Set<View>(["chat", "workspace"]),
   );
   // Remote-only mode — SSH tunnel has full access; only pure HTTP remote mode restricts screens
   const [remoteMode, setRemoteMode] = useState(false);
@@ -691,11 +714,11 @@ function Layout({
           <div className="sidebar-brand">
             <div className="mighty-brand" aria-label="Mighty workspace">
               <span className="mighty-brand-mark" aria-hidden="true">
-                <Wand size={16} />
+                <img src={mightyIcon} alt="" className="mighty-artwork-icon" />
               </span>
               <span className="mighty-brand-copy">
                 <strong>Mighty</strong>
-                <small>LOCAL WORKSPACE</small>
+                <small>YOUR PERSONAL WORKSPACE</small>
               </span>
             </div>
             <button
@@ -723,6 +746,35 @@ function Layout({
             </button>
           </div>
 
+          <div className="mighty-sidebar-utilities">
+            <button
+              className="mighty-icon-button"
+              aria-label="Search all conversations"
+              title="Search all conversations"
+              onClick={() => setSessionsModalOpen(true)}
+            >
+              <Search size={16} />
+            </button>
+            <button
+              className="mighty-icon-button"
+              aria-label="Customize appearance"
+              title="Customize appearance"
+              onClick={() => goTo("appearance")}
+            >
+              <Palette size={16} />
+            </button>
+            <button
+              className="mighty-icon-button"
+              aria-label="Open settings"
+              title="Open settings"
+              onClick={() =>
+                openSettings(undefined, { profile: activeProfile })
+              }
+            >
+              <SettingsIcon size={16} />
+            </button>
+          </div>
+
           <nav className="sidebar-nav sidebar-nav-pinned">
             <button
               className={`sidebar-nav-item sidebar-new-chat ${
@@ -737,20 +789,39 @@ function Layout({
                 {t("navigation.newChat")}
               </span>
             </button>
-            {PINNED_NAV_ITEMS.map(({ view: v, icon: Icon, labelKey }) => {
-              return (
-                <button
-                  key={v}
-                  className={`sidebar-nav-item ${view === v ? "active" : ""}`}
-                  onClick={() => goTo(v)}
-                  title={t(labelKey)}
-                  aria-label={t(labelKey)}
-                >
-                  <Icon size={16} />
-                  <span className="sidebar-nav-label">{t(labelKey)}</span>
-                </button>
-              );
-            })}
+            {PINNED_NAV_ITEMS.map(
+              ({ view: v, icon: Icon, labelKey, label }) => {
+                return (
+                  <button
+                    key={v}
+                    className={`sidebar-nav-item ${view === v && !(v === "chat" && companionMode) ? "active" : ""}`}
+                    onClick={() => {
+                      if (v === "chat") setCompanionMode(false);
+                      goTo(v);
+                    }}
+                    title={label || t(labelKey || "")}
+                    aria-label={label || t(labelKey || "")}
+                  >
+                    <Icon size={16} />
+                    <span className="sidebar-nav-label">
+                      {label || t(labelKey || "")}
+                    </span>
+                  </button>
+                );
+              },
+            )}
+            <button
+              className={`sidebar-nav-item ${view === "chat" && companionMode ? "active" : ""}`}
+              onClick={() => {
+                setCompanionMode(true);
+                goTo("chat");
+              }}
+              title="Companion"
+              aria-label="Companion"
+            >
+              <Smile size={16} />
+              <span className="sidebar-nav-label">Companion</span>
+            </button>
           </nav>
 
           <div className="sidebar-chat-section">
@@ -877,7 +948,19 @@ function Layout({
           >
             <span className="mighty-workspace-title">
               <Wand size={14} aria-hidden="true" />
-              Mighty workspace
+              {view === "workspace"
+                ? "Overview"
+                : view === "appearance"
+                  ? "Appearance"
+                  : view === "memory"
+                    ? "Brain"
+                    : view === "kanban"
+                      ? "Workflows"
+                      : view === "tools"
+                        ? "Apps & tools"
+                        : view === "chat" && companionMode
+                          ? "Companion"
+                          : "Mighty workspace"}
             </span>
             <span className="mighty-profile-context">
               Active profile <strong>{activeProfile}</strong>
@@ -890,38 +973,73 @@ function Layout({
             />
           )}
           <div style={paneStyle("chat")}>
-            {runs.map((run) => (
-              <div
-                key={run.runId}
-                style={{
-                  display:
-                    view === "chat" && run.runId === activeRunId
-                      ? "flex"
-                      : "none",
-                  flex: 1,
-                  flexDirection: "column",
-                  overflow: "hidden",
-                }}
-              >
-                <Chat
-                  runId={run.runId}
-                  connectionId={run.connectionId}
-                  initialMessages={run.seed}
-                  initialSessionId={run.sessionId}
-                  active={run.runId === activeRunId}
-                  profile={run.profile}
-                  onNewChat={handleNewChat}
-                  onOpenDiagnose={(section?: string) =>
-                    openSettings(section, { profile: run.profile })
+            <div
+              className={`mighty-conversation-layout ${companionMode ? "with-companion" : ""}`}
+            >
+              {companionMode && view === "chat" && (
+                <Companion
+                  busy={
+                    runs.find((r) => r.runId === activeRunId)?.loading || false
                   }
-                  onLoadingChange={handleRunLoading}
-                  onSessionIdChange={handleRunSessionId}
-                  onTitleChange={handleRunTitle}
-                  agentAppearance={getAppearance(run.profile)}
+                  title={runs.find((r) => r.runId === activeRunId)?.title || ""}
+                  profile={activeProfile}
                 />
-              </div>
-            ))}
+              )}
+              {runs.map((run) => (
+                <div
+                  key={run.runId}
+                  style={{
+                    display:
+                      view === "chat" && run.runId === activeRunId
+                        ? "flex"
+                        : "none",
+                    flex: 1,
+                    flexDirection: "column",
+                    overflow: "hidden",
+                  }}
+                >
+                  <Chat
+                    runId={run.runId}
+                    connectionId={run.connectionId}
+                    initialMessages={run.seed}
+                    initialSessionId={run.sessionId}
+                    active={view === "chat" && run.runId === activeRunId}
+                    profile={run.profile}
+                    onNewChat={handleNewChat}
+                    onOpenDiagnose={(section?: string) =>
+                      openSettings(section, { profile: run.profile })
+                    }
+                    onLoadingChange={handleRunLoading}
+                    onSessionIdChange={handleRunSessionId}
+                    onTitleChange={handleRunTitle}
+                    agentAppearance={getAppearance(run.profile)}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
+
+          {view === "appearance" && (
+            <div style={paneStyle("appearance")}>
+              <ThemeStudio />
+            </div>
+          )}
+          {visitedViews.has("workspace") && (
+            <div style={paneStyle("workspace")}>
+              <Workspace
+                key={JSON.stringify([connectionId, activeProfile])}
+                connectionId={connectionId}
+                profile={activeProfile}
+                visible={view === "workspace"}
+                remoteMode={remoteMode}
+                runs={runs}
+                onNavigate={goTo}
+                onNewChat={handleNewChat}
+                onResume={(id) => void handleResumeSession(id)}
+                onSearch={() => setSessionsModalOpen(true)}
+              />
+            </div>
+          )}
 
           {sessionsModalOpen && (
             <div
@@ -980,7 +1098,12 @@ function Layout({
 
           {visitedViews.has("office") && (
             <div style={paneStyle("office")}>
-              <Office profile={activeProfile} visible={view === "office"} />
+              <AgencyOffice
+                key={JSON.stringify([connectionId, activeProfile])}
+                profile={activeProfile}
+                visible={view === "office"}
+                onWorkflows={() => goTo("kanban")}
+              />
             </div>
           )}
 

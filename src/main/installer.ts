@@ -49,32 +49,13 @@ if (HERMES_DESKTOP_USER_DATA_DIR) {
 // inherit shell-set env vars, so relying on HERMES_HOME alone left
 // Windows users staring at an empty ~/.hermes while their real data
 // sat in %LOCALAPPDATA%\hermes.
-function looksLikeHermesHome(dir: string): boolean {
-  if (!existsSync(dir)) return false;
-  return (
-    existsSync(join(dir, "hermes-agent")) ||
-    existsSync(join(dir, "gateway.pid")) ||
-    existsSync(join(dir, "config.yaml")) ||
-    existsSync(join(dir, "active_profile")) ||
-    existsSync(join(dir, ".env"))
-  );
-}
-
 function defaultHermesHome(): string {
-  const homeDot = join(homedir(), ".hermes");
-  if (!IS_WINDOWS) return homeDot;
-
-  const localApp = process.env.LOCALAPPDATA
-    ? join(process.env.LOCALAPPDATA, "hermes")
-    : null;
-
-  // Prefer whichever location already has hermes data.
-  if (localApp && looksLikeHermesHome(localApp)) return localApp;
-  if (looksLikeHermesHome(homeDot)) return homeDot;
-
-  // Neither populated yet — fall back to install.ps1's default so a
-  // fresh install lines up with where the installer will write.
-  return localApp ?? homeDot;
+  return IS_WINDOWS
+    ? join(
+        process.env.LOCALAPPDATA || join(homedir(), "AppData", "Local"),
+        "Mighty",
+      )
+    : join(homedir(), ".mighty");
 }
 
 // A Hermes home the user explicitly pointed the app at via the "use an
@@ -87,7 +68,7 @@ function hermesHomeOverrideFile(): string {
   // optional-chain it so module load degrades to "no override" instead of
   // throwing.
   const userData = app?.getPath?.("userData");
-  return userData ? join(userData, "hermes-home.json") : "";
+  return userData ? join(userData, "mighty-home.json") : "";
 }
 
 function readHermesHomeOverride(): string {
@@ -126,9 +107,12 @@ export function setHermesHomeOverride(home: string): void {
 }
 
 export const HERMES_HOME =
-  process.env.HERMES_HOME?.trim() ||
+  process.env.MIGHTY_HOME?.trim() ||
+  (HERMES_DESKTOP_USER_DATA_DIR ? process.env.HERMES_HOME?.trim() : "") ||
   readHermesHomeOverride() ||
   defaultHermesHome();
+// Engine libraries keep their upstream environment key, isolated to this process.
+process.env.HERMES_HOME = HERMES_HOME;
 export const HERMES_REPO = join(HERMES_HOME, "hermes-agent");
 export const HERMES_VENV = join(HERMES_REPO, "venv");
 // On Windows, use `pythonw.exe` (the GUI-subsystem interpreter that ships in
@@ -536,7 +520,10 @@ export async function verifyInstall(): Promise<boolean> {
   return new Promise((resolve) => {
     execFile(
       HERMES_PYTHON,
-      hermesCliArgs(["--version"]),
+      [
+        "-c",
+        "import importlib.util,pathlib; import yaml,dotenv; root=pathlib.Path.cwd().resolve(); spec=importlib.util.find_spec('hermes_cli.main'); assert spec and pathlib.Path(spec.origin).resolve().is_relative_to(root), 'Engine source resolves outside Mighty'; print('MIGHTY_ENGINE_OK')",
+      ],
       {
         cwd: HERMES_REPO,
         env: {

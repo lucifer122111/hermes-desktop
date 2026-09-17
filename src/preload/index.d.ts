@@ -1207,6 +1207,14 @@ interface HermesAPI {
     body: string,
     profile?: string,
   ) => Promise<{ success: boolean; error?: string }>;
+  mightyOfficeRoster: () => Promise<
+    { slug: string; name: string; division: string; description: string }[]
+  >;
+  mightyOfficeCreateWorkflow: (
+    task: string,
+    specialist: string,
+    profile?: string,
+  ) => Promise<{ success: boolean; ids: string[]; error?: string }>;
   kanbanDispatchOnce: (
     dryRun?: boolean,
     profile?: string,

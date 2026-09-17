@@ -16,7 +16,7 @@ function envPort(name: string, fallback: number): number {
 // these via env vars to avoid colliding with a user's running Hermes gateway.
 export const DEFAULT_API_SERVER_PORT = envPort(
   "HERMES_DESKTOP_DEFAULT_API_PORT",
-  8642,
+  18642,
 );
 const PORT_RANGE_START = envPort(
   "HERMES_DESKTOP_PORT_RANGE_START",

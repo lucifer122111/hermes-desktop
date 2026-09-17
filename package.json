@@ -1,6 +1,6 @@
 {
   "name": "mighty-desktop",
-  "version": "0.7.7",
+  "version": "0.8.0",
   "description": "Mighty — your local AI workspace, powered by Hermes Agent",
   "main": "./out/main/index.js",
   "author": "fathah",

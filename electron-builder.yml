@@ -1,8 +1,12 @@
 appId: com.lucifer122111.mighty
 productName: Mighty
+icon: resources/mighty-icon.png
 directories:
   buildResources: build
 files:
+  - "!.sandbox/**"
+  - "!lat.md/.cache/**"
+  - "!**/*.sqlite{,3,-wal,-shm}"
   - "!**/.vscode/*"
   - "!src/*"
   - "!electron.vite.config.{js,ts,mjs,cjs}"
@@ -28,7 +32,7 @@ nsis:
   perMachine: false
 mac:
   artifactName: ${name}-${version}-${arch}-${os}.${ext}
-  icon: build/icon.icns
+  icon: resources/mighty-icon.png
   entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.inherit.plist
   extendInfo:

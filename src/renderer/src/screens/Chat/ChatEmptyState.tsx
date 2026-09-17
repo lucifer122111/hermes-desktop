@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Search, Clock, Mail, Code, ChartLine, Bell } from "lucide-react";
-import titleLine from "../../assets/title-line.svg";
+import mightyIcon from "../../assets/mighty-icon.png";
 import { useI18n } from "../../components/useI18n";
 
 interface Suggestion {
@@ -53,14 +53,15 @@ export const ChatEmptyState = memo(function ChatEmptyState({
 
   return (
     <div className="chat-empty">
-      <div className="chat-empty-icon">
-        <span
-          className="chat-empty-logo"
-          role="img"
-          aria-label="Hermes"
+      <div className="chat-empty-icon" style={{ background: "transparent" }}>
+        <img
+          src={mightyIcon}
+          alt="Mighty"
+          width={80}
+          height={80}
           style={{
-            maskImage: `url(${titleLine})`,
-            WebkitMaskImage: `url(${titleLine})`,
+            objectFit: "contain",
+            borderRadius: 14,
           }}
         />
       </div>

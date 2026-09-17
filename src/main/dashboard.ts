@@ -211,7 +211,7 @@ function dashboardHasPrebuiltWebDist(): boolean {
 }
 
 async function getFreePort(): Promise<number> {
-  const preferred = Number(process.env.HERMES_DESKTOP_DASHBOARD_PORT);
+  const preferred = Number(process.env.HERMES_DESKTOP_DASHBOARD_PORT || 19642);
   if (Number.isInteger(preferred) && preferred > 0 && preferred < 65536) {
     if (await isPortFree(preferred)) return preferred;
   }

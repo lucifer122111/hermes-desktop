@@ -1639,6 +1639,18 @@ const hermesAPI = {
     ipcRenderer.invoke("kanban-reclaim-task", taskId, reason, profile),
   kanbanCommentTask: (taskId: string, body: string, profile?: string) =>
     ipcRenderer.invoke("kanban-comment-task", taskId, body, profile),
+  mightyOfficeRoster: () => ipcRenderer.invoke("mighty-office-roster"),
+  mightyOfficeCreateWorkflow: (
+    task: string,
+    specialist: string,
+    profile?: string,
+  ) =>
+    ipcRenderer.invoke(
+      "mighty-office-create-workflow",
+      task,
+      specialist,
+      profile,
+    ),
   kanbanDispatchOnce: (dryRun?: boolean, profile?: string) =>
     ipcRenderer.invoke("kanban-dispatch-once", dryRun, profile),
   kanbanListClaw3dHqTasks: () =>

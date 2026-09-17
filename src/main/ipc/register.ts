@@ -368,6 +368,7 @@ import {
   type CreateTaskInput,
 } from "../kanban";
 import { getAppLocale, setAppLocale } from "../locale";
+import { officeRoster, createOfficeWorkflow } from "../mighty-office";
 import {
   sshListInstalledSkills,
   sshGetSkillContent,
@@ -740,6 +741,12 @@ export function registerIpcHandlers(context: IpcContext): void {
   });
 
   ipcMain.handle("verify-install", () => verifyInstall());
+  ipcMain.handle("mighty-office-roster", () => officeRoster());
+  ipcMain.handle(
+    "mighty-office-create-workflow",
+    (_event, task: string, specialist: string, profile?: string) =>
+      createOfficeWorkflow(task, specialist, profile),
+  );
 
   ipcMain.handle("start-install", async (event) => {
     try {

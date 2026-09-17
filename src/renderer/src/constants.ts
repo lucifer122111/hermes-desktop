@@ -1,3 +1,5 @@
+import { PRESET_THEMES } from "./vendor/openhuman/theme/presets";
+
 // ── Shared Types ────────────────────────────────────────
 
 export interface FieldDef {
@@ -668,6 +670,11 @@ export interface ThemeDef {
  * entry here and define its CSS variables there — nothing else is required.
  */
 export const THEMES: ThemeDef[] = [
+  ...PRESET_THEMES.map((preset): ThemeDef => ({
+    id: `human-${preset.id}`,
+    name: `Human · ${preset.name}`,
+    appearance: preset.isDark ? "dark" : "light",
+  })),
   { id: "dark", name: "Dark", appearance: "dark" },
   { id: "light", name: "Light", appearance: "light" },
   { id: "dracula", name: "Dracula", appearance: "dark" },
